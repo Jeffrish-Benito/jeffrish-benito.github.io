@@ -1,0 +1,55 @@
+/* ================================================================
+   SCROLL EXPERIENCE — smooth scrolling, cinematic reveals, parallax.
+   Loaded last so it refines the base .reveal behaviour in style.css.
+   ================================================================ */
+:root { --ease-out: cubic-bezier(.16, 1, .3, 1); }
+
+/* JS-driven inertial scrolling takes over from the browser's own smoothing. */
+html.has-smooth-scroll { scroll-behavior: auto !important; }
+
+/* ---------- Reveals ---------- */
+.reveal {
+  --reveal-x: 0px; --reveal-y: 46px; --reveal-scale: 1;
+  opacity: 0;
+  transform: translate3d(var(--reveal-x), var(--reveal-y), 0) scale(var(--reveal-scale));
+  transition: opacity 1s var(--ease-out), transform 1.25s var(--ease-out);
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+.reveal[data-reveal="left"]  { --reveal-x: -64px; --reveal-y: 0px; }
+.reveal[data-reveal="right"] { --reveal-x: 64px;  --reveal-y: 0px; }
+.reveal[data-reveal="scale"] { --reveal-y: 36px; --reveal-scale: .94; }
+.reveal[data-reveal="fade"]  { --reveal-y: 0px; }
+
+/* Cards keep their hover and tilt transitions alongside the entrance. */
+.engine-card.reveal { transition: opacity 1s var(--ease-out), transform 1.25s var(--ease-out), border-color .3s ease, box-shadow .3s ease; }
+.engine-card.reveal-done { transition: border-color .3s ease, box-shadow .3s ease, transform .4s ease; }
+
+/* Visuals unveil with a curtain wipe that lands just after their card. */
+.wipe { clip-path: inset(0 0 100% 0); transition: clip-path 1.4s var(--ease-out) .25s; }
+.is-visible .wipe, .is-visible.wipe { clip-path: inset(0 0 0 0); }
+.reveal-done .wipe, .reveal-done.wipe { clip-path: none; transition: none; }
+
+/* ---------- Parallax (offset is written by js/scrollfx.js) ---------- */
+[data-parallax] { translate: 0 var(--py, 0px); will-change: translate; }
+
+/* ---------- Polish ---------- */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+
+/* Touch screens: native momentum scrolling, but links still glide. */
+html:not(.has-smooth-scroll) { scroll-behavior: smooth; }
+
+/* Reduced motion: the global rule in style.css zeroes every transition, which
+   made the page appear static. Keep reveals and smooth scrolling, but make
+   them gentle: a short fade and small rise, no blur, no parallax. */
+@media (prefers-reduced-motion: reduce) {
+  html:not(.has-smooth-scroll) { scroll-behavior: smooth !important; }
+  .reveal, .reveal[data-reveal] { --reveal-x: 0px; --reveal-y: 28px; --reveal-scale: 1; opacity: 0; transform: translate3d(0, 28px, 0); transition: opacity .9s ease, transform 1s var(--ease-out) !important; }
+  .reveal.is-visible { opacity: 1; transform: none; }
+  .wipe { clip-path: inset(0 0 100% 0); transition: clip-path 1.2s var(--ease-out) .2s !important; }
+  .is-visible .wipe, .is-visible.wipe { clip-path: inset(0 0 0 0); }
+  .reveal-done .wipe, .reveal-done.wipe { clip-path: none; transition: none !important; }
+  .reveal .char, .stagger > * { opacity: 0 !important; transition: opacity .8s ease, transform .9s var(--ease-out) !important; transition-delay: calc(var(--si, 0) * 70ms + 150ms) !important; }
+  .reveal.is-visible .char, .is-visible .stagger > *, .is-visible.stagger > * { opacity: 1 !important; transform: none !important; filter: none !important; }
+  [data-parallax] { translate: none; will-change: auto; }
+}
